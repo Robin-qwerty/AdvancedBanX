@@ -403,10 +403,12 @@ public enum Command {
                 MessageManager.sendMessage(sender, "Check.Mute", false, "DURATION", mute == null ? "<green>none</green>" : mute.getType().isTemp() ? "<yellow>" + mute.getDuration(false) + "</yellow>" : "<red>perma</red>");
                 if (mute != null) {
                     MessageManager.sendMessage(sender, "Check.MuteReason", false, "REASON", mute.getReason());
+                    MessageManager.sendMessage(sender, "Check.MuteOperator", false, "OPERATOR", mute.getOperator());
                 }
-                MessageManager.sendMessage(sender, "Check.Ban", false, "DURATION", ban == null ? "<gree>none</green>" : ban.getType().isTemp() ? "<yellow>" + ban.getDuration(false) + "</yellow>" : "<red>perma</red>");
+                MessageManager.sendMessage(sender, "Check.Ban", false, "DURATION", ban == null ? "<green>none</green>" : ban.getType().isTemp() ? "<yellow>" + ban.getDuration(false) + "</yellow>" : "<red>perma</red>");
                 if (ban != null) {
                     MessageManager.sendMessage(sender, "Check.BanReason", false, "REASON", ban.getReason());
+                    MessageManager.sendMessage(sender, "Check.BanOperator", false, "OPERATOR", ban.getOperator());
                 }
                 MessageManager.sendMessage(sender, "Check.Warn", false, "COUNT", PunishmentManager.get().getCurrentWarns(uuid) + "");
 

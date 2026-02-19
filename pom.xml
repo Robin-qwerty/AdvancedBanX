@@ -12,8 +12,8 @@
     <modules>
         <module>core</module>
         <module>bukkit</module>
-        <module>bungee</module>
-        <module>bundle</module>
+        <!-- <module>bungee</module> Removed - not using BungeeCord -->
+        <!-- <module>bundle</module> Removed - depends on bungee -->
     </modules>
 
     <properties>
@@ -46,7 +46,6 @@
                     <source>8</source>
                     <links>
                         <link>https://hub.spigotmc.org/javadocs/spigot/</link>
-                        <link>https://ci.md-5.net/job/BungeeCord/ws/api/target/apidocs/</link>
                     </links>
                 </configuration>
             </plugin>

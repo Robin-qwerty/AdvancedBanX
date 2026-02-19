@@ -60,7 +60,7 @@ public class ListProcessor implements Consumer<Command.CommandInput> {
                 });
 
         int page = input.hasNext() ? Integer.parseInt(input.getPrimary()) : 1;
-        if (punishments.size() / 5.0 + 1 <= page) {
+        if (punishments.size() / 6.0 + 1 <= page) {
             MessageManager.sendMessage(input.getSender(), config + ".OutOfIndex",
                     true, "PAGE", page + "");
             return;
@@ -75,7 +75,7 @@ public class ListProcessor implements Consumer<Command.CommandInput> {
         SimpleDateFormat format = new SimpleDateFormat(mi.getString(mi.getConfig(),
                 "DateFormat", "dd.MM.yyyy-HH:mm"));
 
-        for (int i = (page - 1) * 5; i < page * 5 && punishments.size() > i; i++) {
+        for (int i = (page - 1) * 6; i < page * 6 && punishments.size() > i; i++) {
             Punishment punishment = punishments.get(i);
             String nameOrIp = punishment.getType().isIpOrientated() ? punishment.getName() + " / " +punishment.getUuid() : punishment.getName();
             List<String> entryLayout = MessageManager.getLayout(mi.getMessages(), config + ".Entry",
@@ -94,9 +94,9 @@ public class ListProcessor implements Consumer<Command.CommandInput> {
 
         MessageManager.sendMessage(input.getSender(), config + ".Footer", false,
                 "CURRENT_PAGE", page + "",
-                "TOTAL_PAGES", (punishments.size() / 5 + (punishments.size() % 5 != 0 ? 1 : 0)) + "",
+                "TOTAL_PAGES", (punishments.size() / 6 + (punishments.size() % 6 != 0 ? 1 : 0)) + "",
                 "COUNT", punishments.size() + "");
-        if (punishments.size() / 5.0 + 1 > page + 1) {
+        if (punishments.size() / 6.0 + 1 > page + 1) {
             MessageManager.sendMessage(input.getSender(), config + ".PageFooter", false,
                     "NEXT_PAGE", (page + 1) + "", "NAME", name);
         }

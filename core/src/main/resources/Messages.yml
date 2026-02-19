@@ -3,7 +3,7 @@
 # Legacy (&/§) formatting is not supported and will cause errors
 
 General:
-  Prefix: "<bold><red>AdvancedBanX</red> <dark_gray>»</dark_gray></bold>"
+  Prefix: "<bold><red>AvesBan</red> <dark_gray>»</dark_gray></bold>"
   NoPerms: "<red>You don't have perms for that!</red>"
   LayoutNotFound: "<red>There is no layout called %NAME%</red>"
   # This will be the replacement for the %DURATION% variable
@@ -199,14 +199,14 @@ Banlist:
   NoEntries: "<red><italic>There are no entries</italic></red>"
   Header:
     - "%PREFIX% <gray>Banlist:</gray>"
-    - "<red><italic>Player/IP</italic></red> <dark_gray>|</dark_gray> <yellow><italic>Duration</italic></yellow> <dark_gray>|</dark_gray> <gray><italic>Banned by</italic></gray>"
-    - "<red><italic>Type</italic></red> <dark_gray>></dark_gray> <gray><italic>Reason</italic></gray>"
+    # - "<red><italic>Player/IP</italic></red> <dark_gray>|</dark_gray> <yellow><italic>Duration</italic></yellow> <dark_gray>|</dark_gray> <gray><italic>Banned by</italic></gray>"
+    # - "<red><italic>Type</italic></red> <dark_gray>></dark_gray> <gray><italic>Reason</italic></gray>"
     - ""
   Entry:
     - "<dark_gray>[<yellow>%DATE%</yellow>]</dark_gray>"
     - "<red>%NAME%</red> <dark_gray>|</dark_gray> <yellow>%DURATION%</yellow> <dark_gray>|</dark_gray> <gray>%OPERATOR%</gray>"
     - "<red>%TYPE%</red> <dark_gray>|</dark_gray> <gray><italic>%REASON%</italic></gray>"
-    - ""
+    # - ""
   Footer: "<gray>Page <yellow><italic>%CURRENT_PAGE%</italic></yellow> of <yellow><italic>%TOTAL_PAGES%</italic></yellow> <dark_gray>|</dark_gray> Listed bans: <yellow><italic>%COUNT%</italic></yellow></gray>"
   PageFooter: "<gray>Use <yellow><italic>/banlist %NEXT_PAGE%</italic></yellow> to see the next page</gray>"
 
@@ -302,8 +302,10 @@ Check:
   Geo: "<red>Country</red> <dark_gray>»</dark_gray> <gray>%LOCATION%</gray>"
   Mute: "<red>Muted</red> <dark_gray>»</dark_gray> <gray>%DURATION%</gray>"
   MuteReason: "  <red>Reason</red> <dark_gray>»</dark_gray> <gray>%REASON%</gray>"
+  MuteOperator: "  <red>Muted by</red> <dark_gray>»</dark_gray> <gray>%OPERATOR%</gray>"
   Ban: "<red>Banned</red> <dark_gray>»</dark_gray> <gray>%DURATION%</gray>"
   BanReason: "  <red>Reason</red> <dark_gray>»</dark_gray> <gray>%REASON%</gray>"
+  BanOperator: "  <red>Banned by</red> <dark_gray>»</dark_gray> <gray>%OPERATOR%</gray>"
   Warn: "<red>Warns</red> <dark_gray>»</dark_gray> <gray>%COUNT%</gray>"
   Note: "<red>Notes</red> <dark_gray>»</dark_gray> <gray>%COUNT%</gray>"
   NotFound: "<red>Sorry we have not been able to find %NAME%"
