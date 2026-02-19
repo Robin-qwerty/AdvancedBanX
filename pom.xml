@@ -12,6 +12,7 @@
     <modules>
         <module>core</module>
         <module>bukkit</module>
+        <module>velocity</module>
         <!-- <module>bungee</module> Removed - not using BungeeCord -->
         <!-- <module>bundle</module> Removed - depends on bungee -->
     </modules>

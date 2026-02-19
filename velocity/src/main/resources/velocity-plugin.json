@@ -1,0 +1,10 @@
+{
+  "id": "advancedbanx",
+  "name": "AdvancedBanX",
+  "version": "${project.version}",
+  "description": "Advanced punishment system for Velocity",
+  "authors": ["Leoko", "2vY"],
+  "main": "net.hnt8.advancedban.velocity.VelocityMain",
+  "dependencies": []
+}
+
