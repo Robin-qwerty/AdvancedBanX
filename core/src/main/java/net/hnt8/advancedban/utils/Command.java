@@ -10,6 +10,7 @@ import net.hnt8.advancedban.utils.commands.ListProcessor;
 import net.hnt8.advancedban.utils.commands.PunishmentProcessor;
 import net.hnt8.advancedban.utils.commands.RevokeByIdProcessor;
 import net.hnt8.advancedban.utils.commands.RevokeProcessor;
+import net.hnt8.advancedban.utils.tabcompletion.BannedPlayersTabCompleter;
 import net.hnt8.advancedban.utils.tabcompletion.BasicTabCompleter;
 import net.hnt8.advancedban.utils.tabcompletion.CleanTabCompleter;
 import net.hnt8.advancedban.utils.tabcompletion.PunishmentTabCompleter;
@@ -116,7 +117,7 @@ public enum Command {
 
     UN_BAN("ab." + PunishmentType.BAN.getName() + ".undo",
             "\\S+",
-            new BasicTabCompleter("[Name/IP]"),
+            new BannedPlayersTabCompleter(),
             new RevokeProcessor(PunishmentType.BAN),
             "Un" + PunishmentType.BAN.getConfSection("Usage"),
             "unban"),

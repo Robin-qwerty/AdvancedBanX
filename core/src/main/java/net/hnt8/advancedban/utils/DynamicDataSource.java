@@ -15,13 +15,27 @@ public class DynamicDataSource {
             String dbName = mi.getString(mi.getMySQLFile(), "MySQL.DB-Name", "Unknown");
             String usrName = mi.getString(mi.getMySQLFile(), "MySQL.Username", "Unknown");
             String password = mi.getString(mi.getMySQLFile(), "MySQL.Password", "Unknown");
-            String properties = mi.getString(mi.getMySQLFile(), "MySQL.Properties", "verifyServerCertificate=false&useSSL=false&useUnicode=true&characterEncoding=utf8");
+            String properties = mi.getString(mi.getMySQLFile(), "MySQL.Properties", "verifyServerCertificate=false&useSSL=false&useUnicode=true&characterEncoding=utf8&allowPublicKeyRetrieval=true");
             int port = mi.getInteger(mi.getMySQLFile(), "MySQL.Port", 3306);
+            
+            // Ensure allowPublicKeyRetrieval is set for MySQL 8.0+ compatibility
+            if (!properties.toLowerCase().contains("allowpublickeyretrieval")) {
+                properties += (properties.isEmpty() ? "" : "&") + "allowPublicKeyRetrieval=true";
+            }
 
-            Class.forName("com.mysql.jdbc.Driver");
+            // Try modern driver first, fallback to legacy driver
+            try {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+            } catch (ClassNotFoundException e) {
+                Class.forName("com.mysql.jdbc.Driver");
+            }
             config.setJdbcUrl("jdbc:mysql://" + ip + ":" + port + "/" + dbName + "?"+properties);
             config.setUsername(usrName);
             config.setPassword(password);
+            // Set connection timeout and validation
+            config.setConnectionTimeout(5000); // 5 seconds
+            config.setValidationTimeout(3000); // 3 seconds
+            config.setConnectionTestQuery("SELECT 1");
         } else {
             // No need to worry about relocation because the maven-shade-plugin also changes strings
             String driverClassName = "org.hsqldb.jdbc.JDBCDriver";
