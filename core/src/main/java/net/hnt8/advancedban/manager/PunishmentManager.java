@@ -396,6 +396,13 @@ public class PunishmentManager {
      * @throws SQLException the sql exception
      */
     public Punishment getPunishmentFromResultSet(ResultSet rs) throws SQLException {
+        // Handle server column - may not exist in older databases
+        String server = null;
+        try {
+            server = rs.getString("server");
+        } catch (SQLException ex) {
+            // Column doesn't exist yet, will be null
+        }
         return new Punishment(
                 rs.getString("name"),
                 rs.getString("uuid"), rs.getString("reason"),
@@ -404,6 +411,7 @@ public class PunishmentManager {
                 rs.getLong("start"),
                 rs.getLong("end"),
                 rs.getString("calculation"),
+                server,
                 rs.getInt("id"));
     }
 

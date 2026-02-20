@@ -78,6 +78,7 @@ public class ListProcessor implements Consumer<Command.CommandInput> {
         for (int i = (page - 1) * 6; i < page * 6 && punishments.size() > i; i++) {
             Punishment punishment = punishments.get(i);
             String nameOrIp = punishment.getType().isIpOrientated() ? punishment.getName() + " / " +punishment.getUuid() : punishment.getName();
+            String server = punishment.getServer() != null && !punishment.getServer().isEmpty() ? punishment.getServer() : "N/A";
             List<String> entryLayout = MessageManager.getLayout(mi.getMessages(), config + ".Entry",
                     "PREFIX", prefix,
                     "NAME", nameOrIp,
@@ -86,7 +87,8 @@ public class ListProcessor implements Consumer<Command.CommandInput> {
                     "REASON", punishment.getReason(),
                     "TYPE", punishment.getType().getName(),
                     "ID", punishment.getId() + "",
-                    "DATE", format.format(new Date(punishment.getStart())));
+                    "DATE", format.format(new Date(punishment.getStart())),
+                    "SERVER", server);
 
             for (String line : entryLayout)
                 mi.sendMessage(input.getSender(), line);

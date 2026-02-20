@@ -405,11 +405,17 @@ public enum Command {
                 if (mute != null) {
                     MessageManager.sendMessage(sender, "Check.MuteReason", false, "REASON", mute.getReason());
                     MessageManager.sendMessage(sender, "Check.MuteOperator", false, "OPERATOR", mute.getOperator());
+                    if (mute.getServer() != null && !mute.getServer().isEmpty()) {
+                        MessageManager.sendMessage(sender, "Check.MuteServer", false, "SERVER", mute.getServer());
+                    }
                 }
                 MessageManager.sendMessage(sender, "Check.Ban", false, "DURATION", ban == null ? "<green>none</green>" : ban.getType().isTemp() ? "<yellow>" + ban.getDuration(false) + "</yellow>" : "<red>perma</red>");
                 if (ban != null) {
                     MessageManager.sendMessage(sender, "Check.BanReason", false, "REASON", ban.getReason());
                     MessageManager.sendMessage(sender, "Check.BanOperator", false, "OPERATOR", ban.getOperator());
+                    if (ban.getServer() != null && !ban.getServer().isEmpty()) {
+                        MessageManager.sendMessage(sender, "Check.BanServer", false, "SERVER", ban.getServer());
+                    }
                 }
                 MessageManager.sendMessage(sender, "Check.Warn", false, "COUNT", PunishmentManager.get().getCurrentWarns(uuid) + "");
 

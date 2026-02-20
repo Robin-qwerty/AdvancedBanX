@@ -14,9 +14,10 @@ public enum SQLQuery {
             "`reason` VARCHAR(255) NULL DEFAULT NULL," +
             "`operator` VARCHAR(16) NULL DEFAULT NULL," +
             "`punishmentType` VARCHAR(16) NULL DEFAULT NULL," +
-            "`start` LONG DEFAULT NULL," +
-            "`end` LONG DEFAULT NULL," +
+            "`start` BIGINT DEFAULT NULL," +
+            "`end` BIGINT DEFAULT NULL," +
             "`calculation` VARCHAR(50) NULL DEFAULT NULL," +
+            "`server` VARCHAR(64) NULL DEFAULT NULL," +
             "PRIMARY KEY (`id`))",
 
             "CREATE TABLE IF NOT EXISTS Punishments (" +
@@ -28,7 +29,8 @@ public enum SQLQuery {
             "punishmentType VARCHAR(16)," +
             "start BIGINT," +
             "end BIGINT," +
-            "calculation VARCHAR(50))"
+            "calculation VARCHAR(50)," +
+            "server VARCHAR(64))"
     ),
     CREATE_TABLE_PUNISHMENT_HISTORY(
             "CREATE TABLE IF NOT EXISTS `PunishmentHistory` (" +
@@ -38,9 +40,10 @@ public enum SQLQuery {
             "`reason` VARCHAR(255) NULL DEFAULT NULL," +
             "`operator` VARCHAR(16) NULL DEFAULT NULL," +
             "`punishmentType` VARCHAR(16) NULL DEFAULT NULL," +
-            "`start` LONG DEFAULT NULL," +
-            "`end` LONG DEFAULT NULL," +
+            "`start` BIGINT DEFAULT NULL," +
+            "`end` BIGINT DEFAULT NULL," +
             "`calculation` VARCHAR(50) NULL DEFAULT NULL," +
+            "`server` VARCHAR(64) NULL DEFAULT NULL," +
             "PRIMARY KEY (`id`))",
 
             "CREATE TABLE IF NOT EXISTS PunishmentHistory (" +
@@ -52,25 +55,26 @@ public enum SQLQuery {
             "punishmentType VARCHAR(16)," +
             "start BIGINT," +
             "end BIGINT," +
-            "calculation VARCHAR(50))"
+            "calculation VARCHAR(50)," +
+            "server VARCHAR(64))"
     ),
     INSERT_PUNISHMENT(
             "INSERT INTO `Punishments` " +
-            "(`name`, `uuid`, `reason`, `operator`, `punishmentType`, `start`, `end`, `calculation`) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            "(`name`, `uuid`, `reason`, `operator`, `punishmentType`, `start`, `end`, `calculation`, `server`) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 
             "INSERT INTO Punishments " +
-            "(name, uuid, reason, operator, punishmentType, start, end, calculation) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+            "(name, uuid, reason, operator, punishmentType, start, end, calculation, server) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
     ),
     INSERT_PUNISHMENT_HISTORY(
             "INSERT INTO `PunishmentHistory` " +
-            "(`name`, `uuid`, `reason`, `operator`, `punishmentType`, `start`, `end`, `calculation`) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            "(`name`, `uuid`, `reason`, `operator`, `punishmentType`, `start`, `end`, `calculation`, `server`) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 
             "INSERT INTO PunishmentHistory " +
-            "(name, uuid, reason, operator, punishmentType, start, end, calculation) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+            "(name, uuid, reason, operator, punishmentType, start, end, calculation, server) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
     ),
     SELECT_EXACT_PUNISHMENT(
             "SELECT * FROM `Punishments` WHERE `uuid` = ? AND `start` = ? AND `punishmentType` = ?",

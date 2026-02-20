@@ -15,9 +15,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * The Database Manager is used to interact directly with the database is use.<br>
@@ -107,6 +109,14 @@ public class DatabaseManager {
 
         executeStatement(SQLQuery.CREATE_TABLE_PUNISHMENT);
         executeStatement(SQLQuery.CREATE_TABLE_PUNISHMENT_HISTORY);
+        if (useMySQL) {
+            // Fix LONG columns to BIGINT if they exist (for existing databases)
+            fixLongColumnsToBigInt();
+            // Add server column to existing tables if it doesn't exist
+            addServerColumnIfMissing();
+            // Create indexes after ensuring column types are correct
+            createMySqlIndexes();
+        }
         
         // Check if we're switching from HSQLDB to MySQL and migrate if needed
         if (useMySQL && !previousUseMySQL) {
@@ -180,7 +190,7 @@ public class DatabaseManager {
                 try (PreparedStatement selectStmt = hsqldbConn.prepareStatement("SELECT * FROM Punishments");
                      ResultSet rs = selectStmt.executeQuery();
                      PreparedStatement insertStmt = mysqlConn.prepareStatement(
-                         "INSERT INTO `Punishments` (`name`, `uuid`, `reason`, `operator`, `punishmentType`, `start`, `end`, `calculation`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+                         "INSERT INTO `Punishments` (`name`, `uuid`, `reason`, `operator`, `punishmentType`, `start`, `end`, `calculation`, `server`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
                     
                     while (rs.next()) {
                         insertStmt.setString(1, rs.getString("name"));
@@ -191,6 +201,12 @@ public class DatabaseManager {
                         insertStmt.setLong(6, rs.getLong("start"));
                         insertStmt.setLong(7, rs.getLong("end"));
                         insertStmt.setString(8, rs.getString("calculation"));
+                        // Server column may not exist in HSQLDB, so use null
+                        try {
+                            insertStmt.setString(9, rs.getString("server"));
+                        } catch (SQLException ex) {
+                            insertStmt.setString(9, null);
+                        }
                         insertStmt.executeUpdate();
                         migratedPunishments++;
                     }
@@ -200,7 +216,7 @@ public class DatabaseManager {
                 try (PreparedStatement selectStmt = hsqldbConn.prepareStatement("SELECT * FROM PunishmentHistory");
                      ResultSet rs = selectStmt.executeQuery();
                      PreparedStatement insertStmt = mysqlConn.prepareStatement(
-                         "INSERT INTO `PunishmentHistory` (`name`, `uuid`, `reason`, `operator`, `punishmentType`, `start`, `end`, `calculation`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+                         "INSERT INTO `PunishmentHistory` (`name`, `uuid`, `reason`, `operator`, `punishmentType`, `start`, `end`, `calculation`, `server`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
                     
                     while (rs.next()) {
                         insertStmt.setString(1, rs.getString("name"));
@@ -211,6 +227,12 @@ public class DatabaseManager {
                         insertStmt.setLong(6, rs.getLong("start"));
                         insertStmt.setLong(7, rs.getLong("end"));
                         insertStmt.setString(8, rs.getString("calculation"));
+                        // Server column may not exist in HSQLDB, so use null
+                        try {
+                            insertStmt.setString(9, rs.getString("server"));
+                        } catch (SQLException ex) {
+                            insertStmt.setString(9, null);
+                        }
                         insertStmt.executeUpdate();
                         migratedHistory++;
                     }
@@ -231,6 +253,202 @@ public class DatabaseManager {
             Universal.get().getLogger().severe("Failed to migrate data from HSQLDB to MySQL: " + ex.getMessage());
             Universal.get().debugException(ex);
         }
+    }
+
+    /**
+     * Creates performance indexes for MySQL tables if they do not already exist.
+     * This keeps startup idempotent and avoids duplicate-index errors on reboot.
+     */
+    private void createMySqlIndexes() {
+        try (Connection connection = dataSource.getConnection()) {
+            Universal.get().getLogger().info("Creating MySQL indexes...");
+            
+            // Active punishments table
+            ensureMySqlIndex(connection, "Punishments", "idx_punishments_uuid_type_start", "uuid", "punishmentType", "start");
+            ensureMySqlIndex(connection, "Punishments", "idx_punishments_end", "end");
+            ensureMySqlIndex(connection, "Punishments", "idx_punishments_start", "start");
+
+            // History table
+            ensureMySqlIndex(connection, "PunishmentHistory", "idx_history_uuid", "uuid");
+            ensureMySqlIndex(connection, "PunishmentHistory", "idx_history_uuid_calculation", "uuid", "calculation");
+            ensureMySqlIndex(connection, "PunishmentHistory", "idx_history_start", "start");
+            
+            Universal.get().getLogger().info("MySQL indexes creation completed.");
+        } catch (SQLException ex) {
+            Universal.get().getLogger().warning("Failed to create MySQL indexes: " + ex.getMessage());
+            Universal.get().debugSqlException(ex);
+        }
+    }
+
+    /**
+     * Fixes LONG columns to BIGINT for existing MySQL databases.
+     * MySQL interprets LONG as MEDIUMTEXT, which cannot be indexed.
+     */
+    private void fixLongColumnsToBigInt() {
+        try (Connection connection = dataSource.getConnection()) {
+            // Check and fix start/end columns in Punishments table
+            fixColumnTypeIfNeeded(connection, "Punishments", "start");
+            fixColumnTypeIfNeeded(connection, "Punishments", "end");
+            
+            // Check and fix start/end columns in PunishmentHistory table
+            fixColumnTypeIfNeeded(connection, "PunishmentHistory", "start");
+            fixColumnTypeIfNeeded(connection, "PunishmentHistory", "end");
+        } catch (SQLException ex) {
+            Universal.get().getLogger().warning("Failed to fix LONG columns to BIGINT: " + ex.getMessage());
+            Universal.get().debugSqlException(ex);
+        }
+    }
+
+    /**
+     * Checks if a column is of type LONG (MEDIUMTEXT) and converts it to BIGINT if needed.
+     */
+    private void fixColumnTypeIfNeeded(Connection connection, String table, String column) throws SQLException {
+        DatabaseMetaData metaData = connection.getMetaData();
+        try (ResultSet rs = metaData.getColumns(null, null, table, column)) {
+            if (rs.next()) {
+                String typeName = rs.getString("TYPE_NAME");
+                // Check if it's MEDIUMTEXT (MySQL's interpretation of LONG)
+                if (typeName != null && (typeName.equalsIgnoreCase("MEDIUMTEXT") || typeName.equalsIgnoreCase("LONGTEXT") || typeName.equalsIgnoreCase("TEXT"))) {
+                    Universal.get().getLogger().info("Converting " + table + "." + column + " from " + typeName + " to BIGINT...");
+                    try (Statement stmt = connection.createStatement()) {
+                        stmt.execute("ALTER TABLE `" + table + "` MODIFY COLUMN `" + column + "` BIGINT DEFAULT NULL");
+                        Universal.get().getLogger().info("Successfully converted " + table + "." + column + " to BIGINT.");
+                    } catch (SQLException ex) {
+                        // If column doesn't exist or other error, log and continue
+                        Universal.get().getLogger().warning("Failed to convert " + table + "." + column + ": " + ex.getMessage());
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Adds the server column to existing MySQL tables if it doesn't exist.
+     * This allows existing databases to be upgraded without data loss.
+     */
+    private void addServerColumnIfMissing() {
+        try (Connection connection = dataSource.getConnection()) {
+            // Check if server column exists in Punishments table
+            if (!columnExists(connection, "Punishments", "server")) {
+                Universal.get().getLogger().info("Adding 'server' column to Punishments table...");
+                try (PreparedStatement stmt = connection.prepareStatement(
+                        "ALTER TABLE `Punishments` ADD COLUMN `server` VARCHAR(64) NULL DEFAULT NULL")) {
+                    stmt.execute();
+                    Universal.get().getLogger().info("Successfully added 'server' column to Punishments table.");
+                }
+            }
+            
+            // Check if server column exists in PunishmentHistory table
+            if (!columnExists(connection, "PunishmentHistory", "server")) {
+                Universal.get().getLogger().info("Adding 'server' column to PunishmentHistory table...");
+                try (PreparedStatement stmt = connection.prepareStatement(
+                        "ALTER TABLE `PunishmentHistory` ADD COLUMN `server` VARCHAR(64) NULL DEFAULT NULL")) {
+                    stmt.execute();
+                    Universal.get().getLogger().info("Successfully added 'server' column to PunishmentHistory table.");
+                }
+            }
+        } catch (SQLException ex) {
+            Universal.get().getLogger().warning("Failed to add server column: " + ex.getMessage());
+            Universal.get().debugSqlException(ex);
+        }
+    }
+
+    /**
+     * Checks if a column exists in a MySQL table.
+     */
+    private boolean columnExists(Connection connection, String table, String column) throws SQLException {
+        try (ResultSet rs = connection.getMetaData().getColumns(null, null, table, column)) {
+            return rs.next();
+        }
+    }
+
+    private void ensureMySqlIndex(Connection connection, String table, String indexName, String... columns) throws SQLException {
+        if (mySqlIndexExists(connection, table, indexName)) {
+            Universal.get().getLogger().fine("Index " + indexName + " already exists on table " + table + ", skipping.");
+            return;
+        }
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("CREATE INDEX `").append(indexName).append("` ON `").append(table).append("` (");
+        for (int i = 0; i < columns.length; i++) {
+            if (i > 0) {
+                sql.append(", ");
+            }
+            sql.append('`').append(columns[i]).append('`');
+        }
+        sql.append(')');
+
+        String sqlString = sql.toString();
+        Universal.get().getLogger().info("Creating index " + indexName + " on table " + table + "...");
+        
+        // Use Statement for DDL operations instead of PreparedStatement
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(sqlString);
+            
+            // Verify the index was actually created
+            if (mySqlIndexExists(connection, table, indexName)) {
+                Universal.get().getLogger().info("Successfully created index " + indexName + " on table " + table + ".");
+            } else {
+                Universal.get().getLogger().warning("Index " + indexName + " was not created on table " + table + " (verification failed).");
+            }
+        } catch (SQLException ex) {
+            // Check if it's a duplicate index error (index might have been created by another connection)
+            if (ex.getErrorCode() == 1061 || ex.getMessage().contains("Duplicate key name")) {
+                Universal.get().getLogger().fine("Index " + indexName + " already exists (detected during creation), skipping.");
+            } else if (ex.getMessage() != null && ex.getMessage().contains("BLOB/TEXT") && ex.getMessage().contains("key length")) {
+                // Column is still TEXT/BLOB type, skip this index
+                Universal.get().getLogger().warning("Cannot create index " + indexName + " on table " + table + ": column type is not indexable. The column may need to be converted to BIGINT.");
+                Universal.get().getLogger().info("Attempting to fix column types and retry...");
+                // Don't throw, just skip this index
+            } else {
+                Universal.get().getLogger().warning("Failed to create index " + indexName + " on table " + table + ": " + ex.getMessage());
+                // Don't throw - continue with other indexes
+            }
+        }
+    }
+
+    private boolean mySqlIndexExists(Connection connection, String table, String indexName) throws SQLException {
+        DatabaseMetaData metaData = connection.getMetaData();
+        String catalog = connection.getCatalog();
+        
+        // Try exact table name first
+        if (indexExists(metaData, catalog, table, indexName)) {
+            return true;
+        }
+        
+        // MySQL table name case can vary by OS/filesystem; check common variants.
+        if (indexExists(metaData, catalog, table.toLowerCase(), indexName)) {
+            return true;
+        }
+        if (indexExists(metaData, catalog, table.toUpperCase(), indexName)) {
+            return true;
+        }
+        
+        // Also try with null catalog (some MySQL setups don't return catalog properly)
+        if (indexExists(metaData, null, table, indexName)) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    private boolean indexExists(DatabaseMetaData metaData, String catalog, String table, String indexName) throws SQLException {
+        try (ResultSet rs = metaData.getIndexInfo(catalog, null, table, false, false)) {
+            while (rs.next()) {
+                String existing = rs.getString("INDEX_NAME");
+                // PRIMARY key is returned as null by getIndexInfo, skip it
+                if (existing != null && existing.equalsIgnoreCase(indexName)) {
+                    return true;
+                }
+            }
+        } catch (SQLException ex) {
+            // If table doesn't exist yet, this will throw - that's okay, index doesn't exist
+            if (ex.getMessage() != null && ex.getMessage().contains("doesn't exist")) {
+                return false;
+            }
+            throw ex;
+        }
+        return false;
     }
 
     /**

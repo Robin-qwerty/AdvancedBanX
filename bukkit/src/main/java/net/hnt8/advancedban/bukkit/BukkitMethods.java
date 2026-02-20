@@ -416,4 +416,11 @@ public class BukkitMethods implements MethodInterface {
     public boolean isUnitTesting() {
         return false;
     }
+
+    @Override
+    public String getServerName(Object player) {
+        // For Bukkit, server name is not applicable (single server)
+        // Return null or configured server name if needed
+        return null;
+    }
 }

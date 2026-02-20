@@ -415,4 +415,14 @@ public interface MethodInterface {
      * @return the boolean
      */
     boolean isUnitTesting();
+
+    /**
+     * Get the server name where the punishment is being issued.
+     * For Velocity/BungeeCord, returns the server name.
+     * For Bukkit, returns null or configured server name.
+     *
+     * @param player the player object (can be null for console commands)
+     * @return the server name, or null if not applicable
+     */
+    String getServerName(Object player);
 }

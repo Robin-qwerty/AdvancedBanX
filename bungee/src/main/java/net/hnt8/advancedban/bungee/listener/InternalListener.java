@@ -66,6 +66,7 @@ public class InternalListener implements Listener {
                             punishment.get("start") != null ? punishment.get("start").getAsLong() : TimeManager.getTime(),
                             TimeManager.getTime() + punishment.get("end").getAsLong(),
                             punishment.get("calculation") != null ? punishment.get("calculation").getAsString() : null,
+                            punishment.get("server") != null ? punishment.get("server").getAsString() : null,
                             -1
                     ).create(punishment.get("silent") != null && punishment.get("silent").getAsBoolean());
                     universal.getLogger().info("A punishment was created using PluginMessaging listener.");

@@ -467,6 +467,20 @@ public class VelocityMethods implements MethodInterface {
         return false;
     }
 
+    @Override
+    public String getServerName(Object player) {
+        // For Velocity, get the server name where the player is currently connected
+        if (player instanceof Player) {
+            Player velocityPlayer = (Player) player;
+            // Get the server the player is currently connected to
+            return velocityPlayer.getCurrentServer()
+                    .map(serverConnection -> serverConnection.getServerInfo().getName())
+                    .orElse(null);
+        }
+        // For console commands, return null or proxy server name
+        return null;
+    }
+
     private ProxyServer getServer() {
         return VelocityMain.get().getServer();
     }

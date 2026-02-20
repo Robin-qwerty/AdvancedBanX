@@ -20,14 +20,14 @@ import java.util.List;
 public class Punishment {
 
     private static final MethodInterface mi = Universal.get().getMethods();
-    private final String name, uuid, operator, calculation;
+    private final String name, uuid, operator, calculation, server;
     private final long start, end;
     private final PunishmentType type;
 
     private String reason;
     private int id;
 
-    public Punishment(String name, String uuid, String reason, String operator, PunishmentType type, long start, long end, String calculation, int id) {
+    public Punishment(String name, String uuid, String reason, String operator, PunishmentType type, long start, long end, String calculation, String server, int id) {
         this.name = name;
         this.uuid = uuid;
         this.reason = reason;
@@ -36,13 +36,14 @@ public class Punishment {
         this.start = start;
         this.end = end;
         this.calculation = calculation;
+        this.server = server;
         this.id = id;
     }
 
     public static void create(String name, String target, String reason, String operator, PunishmentType type, Long end,
-                              String calculation, boolean silent) {
+                              String calculation, String server, boolean silent) {
         new Punishment(name, target, reason, operator, end == -1 ? type.getPermanent() : type,
-                TimeManager.getTime(), end, calculation, -1)
+                TimeManager.getTime(), end, calculation, server, -1)
                 .create(silent);
     }
 
@@ -78,11 +79,11 @@ public class Punishment {
 
         final int cWarnings = getType().getBasic() == PunishmentType.WARNING ? (PunishmentManager.get().getCurrentWarns(getUuid()) + 1) : 0;
 
-        DatabaseManager.get().executeStatement(SQLQuery.INSERT_PUNISHMENT_HISTORY, getName(), getUuid(), getReason(), getOperator(), getType().name(), getStart(), getEnd(), getCalculation());
+        DatabaseManager.get().executeStatement(SQLQuery.INSERT_PUNISHMENT_HISTORY, getName(), getUuid(), getReason(), getOperator(), getType().name(), getStart(), getEnd(), getCalculation(), getServer());
 
         if (getType() != PunishmentType.KICK) {
             try {
-                DatabaseManager.get().executeStatement(SQLQuery.INSERT_PUNISHMENT, getName(), getUuid(), getReason(), getOperator(), getType().name(), getStart(), getEnd(), getCalculation());
+                DatabaseManager.get().executeStatement(SQLQuery.INSERT_PUNISHMENT, getName(), getUuid(), getReason(), getOperator(), getType().name(), getStart(), getEnd(), getCalculation(), getServer());
                 try (ResultSet rs = DatabaseManager.get().executeResultStatement(SQLQuery.SELECT_EXACT_PUNISHMENT, getUuid(), getStart(), getType().name())) {
                     if (rs.next()) {
                         id = rs.getInt("id");
@@ -274,6 +275,10 @@ public class Punishment {
         return this.calculation;
     }
 
+    public String getServer() {
+        return this.server;
+    }
+
     public long getStart() {
         return this.start;
     }
@@ -291,6 +296,6 @@ public class Punishment {
     }
 
     public String toString() {
-        return "Punishment(name=" + this.getName() + ", uuid=" + this.getUuid() + ", operator=" + this.getOperator() + ", calculation=" + this.getCalculation() + ", start=" + this.getStart() + ", end=" + this.getEnd() + ", type=" + this.getType() + ", reason=" + this.getReason() + ", id=" + this.getId() + ")";
+        return "Punishment(name=" + this.getName() + ", uuid=" + this.getUuid() + ", operator=" + this.getOperator() + ", calculation=" + this.getCalculation() + ", server=" + this.getServer() + ", start=" + this.getStart() + ", end=" + this.getEnd() + ", type=" + this.getType() + ", reason=" + this.getReason() + ", id=" + this.getId() + ")";
     }
 }
