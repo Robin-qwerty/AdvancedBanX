@@ -1,9 +1,9 @@
 {
-  "id": "advancedbanx",
-  "name": "AdvancedBanX",
+  "id": "avesban",
+  "name": "Avesban",
   "version": "${project.version}",
   "description": "Advanced punishment system for Velocity",
-  "authors": ["Leoko", "2vY"],
+  "authors": ["Leoko", "2vY", "Robinaves"],
   "main": "net.hnt8.advancedban.velocity.VelocityMain",
   "dependencies": []
 }

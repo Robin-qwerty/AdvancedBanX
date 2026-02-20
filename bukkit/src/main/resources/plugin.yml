@@ -1,8 +1,8 @@
-name: AdvancedBanX
+name: Avesban-Bukkit
 version: ${project.version}
 main: ${project.groupId}.bukkit.BukkitMain
-authors: ["Leoko", "2vY"]
-prefix: AdvancedBanX
+authors: ["Leoko", "2vY", "Robinaves"]
+prefix: Avesban
 softdepend: [Vault]
 api-version: 1.13
 

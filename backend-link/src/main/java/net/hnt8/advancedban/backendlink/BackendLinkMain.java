@@ -25,10 +25,10 @@ public class BackendLinkMain extends JavaPlugin {
     public void onEnable() {
         instance = this;
         
-        // Check if the full AdvancedBanX plugin is loaded
-        Plugin fullPlugin = Bukkit.getPluginManager().getPlugin("AdvancedBanX");
+        // Check if the full Avesban plugin is loaded
+        Plugin fullPlugin = Bukkit.getPluginManager().getPlugin("Avesban");
         if (fullPlugin != null && fullPlugin.isEnabled()) {
-            getLogger().warning("AdvancedBanX full plugin is already loaded! BackendLink is not needed.");
+            getLogger().warning("Avesban full plugin is already loaded! BackendLink is not needed.");
             getLogger().warning("Disabling BackendLink to avoid conflicts...");
             Bukkit.getPluginManager().disablePlugin(this);
             return;
@@ -47,13 +47,13 @@ public class BackendLinkMain extends JavaPlugin {
             }
         }
         
-        getLogger().info("AdvancedBanX BackendLink enabled! Commands will be forwarded to Velocity proxy.");
+        getLogger().info("Avesban BackendLink enabled! Commands will be forwarded to Velocity proxy.");
     }
 
     @Override
     public void onDisable() {
         getServer().getMessenger().unregisterOutgoingPluginChannel(this, CHANNEL);
-        getLogger().info("AdvancedBanX BackendLink disabled!");
+        getLogger().info("Avesban BackendLink disabled!");
     }
 
     public static BackendLinkMain getInstance() {

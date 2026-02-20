@@ -6,11 +6,11 @@
     
     <parent>
         <groupId>net.hnt8.advancedban</groupId>
-        <artifactId>AdvancedBanX</artifactId>
-        <version>3.1.0</version>
+        <artifactId>Avesban</artifactId>
+        <version>4.0.0</version>
     </parent>
 
-    <artifactId>AdvancedBanX-BackendLink</artifactId>
+    <artifactId>Avesban-BackendLink</artifactId>
     <packaging>jar</packaging>
 
     <repositories>

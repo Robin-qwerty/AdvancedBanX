@@ -1,6 +1,6 @@
-name: AdvancedBanX
+name: Avesban-Bungee
 version: ${project.version}
 main: ${project.groupId}.bungee.BungeeMain
-authors: ["Leoko", "2vY"]
-prefix: AdvancedBanX
+authors: ["Leoko", "2vY", "Robinaves"]
+prefix: Avesban
 softDepends: [RedisBungee, LuckPerms]

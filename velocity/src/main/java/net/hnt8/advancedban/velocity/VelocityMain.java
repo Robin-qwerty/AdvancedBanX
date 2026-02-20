@@ -16,11 +16,11 @@ import java.nio.file.Path;
 import java.util.logging.Logger;
 
 @Plugin(
-        id = "advancedbanx",
-        name = "AdvancedBanX",
+        id = "avesban",
+        name = "Avesban",
         version = "${project.version}",
         description = "Advanced punishment system for Velocity",
-        authors = {"Leoko", "2vY"}
+        authors = {"Leoko", "2vY", "Robinaves"}
 )
 public class VelocityMain {
 
@@ -62,13 +62,13 @@ public class VelocityMain {
         server.getEventManager().register(this, new ChatListenerVelocity());
         server.getEventManager().register(this, new BackendCommandListener(server));
 
-        logger.info("AdvancedBanX has been enabled!");
+        logger.info("Avesban has been enabled!");
     }
 
     @Subscribe
     public void onProxyShutdown(ProxyShutdownEvent event) {
         Universal.get().shutdown();
-        logger.info("AdvancedBanX has been disabled!");
+        logger.info("Avesban has been disabled!");
     }
 }
 

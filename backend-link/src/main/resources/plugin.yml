@@ -1,10 +1,11 @@
-name: AdvancedBanX-BackendLink
+name: Avesban-BackendLink
 version: ${project.version}
 main: net.hnt8.advancedban.backendlink.BackendLinkMain
 api-version: 1.13
-description: Backend link plugin for AdvancedBanX - forwards ban commands to Velocity proxy
-author: Leoko, 2vY
-softdepend: [AdvancedBanX]
+folia-supported: true
+description: Backend link plugin for Avesban - forwards ban commands to Velocity proxy
+author: Leoko, 2vY, Robinaves
+softdepend: [Avesban]
 
 commands:
   ban:

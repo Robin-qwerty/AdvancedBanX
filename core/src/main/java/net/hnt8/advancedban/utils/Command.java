@@ -431,7 +431,7 @@ public enum Command {
                 MethodInterface mi = Universal.get().getMethods();
                 Calendar calendar = new GregorianCalendar();
                 Object sender = input.getSender();
-                mi.sendMessage(sender, "<red><bold>AdvancedBanX v3</bold> SystemPrefs</red>");
+                mi.sendMessage(sender, "<red><bold>Avesban v4</bold> SystemPrefs</red>");
                 mi.sendMessage(sender, "<red>Server-Time</red> <dark_gray>»</dark_gray> <gray>" + calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE) + "</gray>");
                 mi.sendMessage(sender, "<red>Your UUID (Intern)</red> <dark_gray>»</dark_gray> <gray>" + mi.getInternUUID(sender) + "</gray>");
                 if (input.hasNext()) {
@@ -453,7 +453,7 @@ public enum Command {
                     if (input.getPrimaryData().equals("reload")) {
                         if (Universal.get().hasPerms(sender, "ab.reload")) {
                             mi.loadFiles();
-                            mi.sendMessage(sender, "<green><bold>AdvancedBanX</bold></green> <dark_gray>»</dark_gray> <gray>Reloaded!</gray>");
+                            mi.sendMessage(sender, "<green><bold>Avesban</bold></green> <dark_gray>»</dark_gray> <gray>Reloaded!</gray>");
                         } else {
                             MessageManager.sendMessage(sender, "General.NoPerms", true);
                         }
@@ -461,7 +461,7 @@ public enum Command {
                     } else if (input.getPrimaryData().equals("help")) {
                         if (Universal.get().hasPerms(sender, "ab.help")) {
                             mi.sendMessage(sender, "");
-                            mi.sendMessage(sender, "<red><bold>AdvancedBanX</bold></red> <gray>Command-Help</gray>");
+                            mi.sendMessage(sender, "<red><bold>Avesban</bold></red> <gray>Command-Help</gray>");
                             mi.sendMessage(sender, "");
                             mi.sendMessage(sender, "<red>/ban [Name] [Reason/@Layout]</red>");
                             mi.sendMessage(sender, "<dark_gray>»</dark_gray> <gray>Ban a user permanently</gray>");
@@ -514,9 +514,9 @@ public enum Command {
                 }
 
 
-                mi.sendMessage(sender, "<bold><dark_gray><strikethrough>-=====</strikethrough></dark_gray> <red>AdvancedBanX v3</red> <dark_gray><strikethrough>=====-</strikethrough></dark_gray></bold>");
-                mi.sendMessage(sender, "  <red>Dev</red> <dark_gray>•</dark_gray> <gray>Leoko</gray>");
-                mi.sendMessage(sender, "  <red>Maintainer</red> <dark_gray>•</dark_gray> <gray>2vY (hlpdev)</gray>");
+                mi.sendMessage(sender, "<bold><dark_gray><strikethrough>-=====</strikethrough></dark_gray> <red>Avesban v4</red> <dark_gray><strikethrough>=====-</strikethrough></dark_gray></bold>");
+                mi.sendMessage(sender, "  <red>Dev</red> <dark_gray>•</dark_gray> <gray>Leoko, 2vY</gray>");
+                mi.sendMessage(sender, "  <red>Maintainer</red> <dark_gray>•</dark_gray> <gray>Robinaves</gray>");
                 mi.sendMessage(sender, "  <red>Status</red> <dark_gray>•</dark_gray> <green><italic>Stable</italic></green>");
                 mi.sendMessage(sender, "  <red>Version</red> <dark_gray>•</dark_gray> <gray>" + mi.getVersion() + "</gray>");
                 mi.sendMessage(sender, "  <red>License</red> <dark_gray>•</dark_gray> <gray>Public</gray>");
@@ -530,7 +530,7 @@ public enum Command {
                 mi.sendMessage(sender, "<bold><dark_gray><strikethrough>-=========================-</strikethrough></dark_gray></bold>");
             },
             null,
-            "advancedban");
+            "avesban");
 
     private final String permission;
     private final Predicate<String[]> syntaxValidator;
