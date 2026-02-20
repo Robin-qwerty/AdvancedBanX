@@ -8,6 +8,7 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.hnt8.advancedban.Universal;
+import net.hnt8.advancedban.velocity.listener.BackendCommandListener;
 import net.hnt8.advancedban.velocity.listener.ChatListenerVelocity;
 import net.hnt8.advancedban.velocity.listener.ConnectionListenerVelocity;
 
@@ -59,6 +60,7 @@ public class VelocityMain {
 
         server.getEventManager().register(this, new ConnectionListenerVelocity());
         server.getEventManager().register(this, new ChatListenerVelocity());
+        server.getEventManager().register(this, new BackendCommandListener(server));
 
         logger.info("AdvancedBanX has been enabled!");
     }
