@@ -1,5 +1,5 @@
 > [!IMPORTANT]  
-> Please keep in mind that this is a fork of the original AdvancedBan plugin. Do not request support for this plugin in the AdvancedBan discord, instead, please make an issue in this repository.
+> Please keep in mind that this is a fork of the original AdvancedBanX plugin witch is a fork of AdvancedBan. Do not request support for this plugin in the AdvancedBan discord, instead, please make an issue in this repository.
 
 # Avesban 4.0.0
 
