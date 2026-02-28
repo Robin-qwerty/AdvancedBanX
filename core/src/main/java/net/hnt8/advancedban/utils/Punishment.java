@@ -20,14 +20,14 @@ import java.util.List;
 public class Punishment {
 
     private static final MethodInterface mi = Universal.get().getMethods();
-    private final String name, uuid, operator, calculation, server;
+    private final String name, uuid, operator, calculation, server, targetServer;
     private final long start, end;
     private final PunishmentType type;
 
     private String reason;
     private int id;
 
-    public Punishment(String name, String uuid, String reason, String operator, PunishmentType type, long start, long end, String calculation, String server, int id) {
+    public Punishment(String name, String uuid, String reason, String operator, PunishmentType type, long start, long end, String calculation, String server, String targetServer, int id) {
         this.name = name;
         this.uuid = uuid;
         this.reason = reason;
@@ -37,13 +37,14 @@ public class Punishment {
         this.end = end;
         this.calculation = calculation;
         this.server = server;
+        this.targetServer = targetServer;
         this.id = id;
     }
 
     public static void create(String name, String target, String reason, String operator, PunishmentType type, Long end,
-                              String calculation, String server, boolean silent) {
+                              String calculation, String server, String targetServer, boolean silent) {
         new Punishment(name, target, reason, operator, end == -1 ? type.getPermanent() : type,
-                TimeManager.getTime(), end, calculation, server, -1)
+                TimeManager.getTime(), end, calculation, server, targetServer, -1)
                 .create(silent);
     }
 
@@ -79,11 +80,11 @@ public class Punishment {
 
         final int cWarnings = getType().getBasic() == PunishmentType.WARNING ? (PunishmentManager.get().getCurrentWarns(getUuid()) + 1) : 0;
 
-        DatabaseManager.get().executeStatement(SQLQuery.INSERT_PUNISHMENT_HISTORY, getName(), getUuid(), getReason(), getOperator(), getType().name(), getStart(), getEnd(), getCalculation(), getServer());
+        DatabaseManager.get().executeStatement(SQLQuery.INSERT_PUNISHMENT_HISTORY, getName(), getUuid(), getReason(), getOperator(), getType().name(), getStart(), getEnd(), getCalculation(), getServer(), getTargetServer());
 
         if (getType() != PunishmentType.KICK) {
             try {
-                DatabaseManager.get().executeStatement(SQLQuery.INSERT_PUNISHMENT, getName(), getUuid(), getReason(), getOperator(), getType().name(), getStart(), getEnd(), getCalculation(), getServer());
+                DatabaseManager.get().executeStatement(SQLQuery.INSERT_PUNISHMENT, getName(), getUuid(), getReason(), getOperator(), getType().name(), getStart(), getEnd(), getCalculation(), getServer(), getTargetServer());
                 try (ResultSet rs = DatabaseManager.get().executeResultStatement(SQLQuery.SELECT_EXACT_PUNISHMENT, getUuid(), getStart(), getType().name())) {
                     if (rs.next()) {
                         id = rs.getInt("id");
@@ -197,6 +198,14 @@ public class Punishment {
     public List<String> getLayout() {
         boolean isLayout = getReason().startsWith("@") || getReason().startsWith("~");
 
+        // Add server name to layout if it's a server-specific ban
+        String serverInfo = "";
+        String targetServerLine = "";
+        if (getTargetServer() != null && !getTargetServer().isEmpty()) {
+            serverInfo = " from " + getTargetServer();
+            targetServerLine = "<red>Server <dark_gray>»</dark_gray></red> <gray>" + getTargetServer() + "</gray>";
+        }
+
         return MessageManager.getLayout(
                 isLayout ? mi.getLayouts() : mi.getMessages(),
                 isLayout ? "Message." + getReason().split(" ")[0].substring(1) : getType().getName() + ".Layout",
@@ -207,7 +216,9 @@ public class Punishment {
                 "HEXID", getHexId(),
                 "ID", String.valueOf(id),
                 "DATE", getDate(start),
-                "COUNT", getType().getBasic() == PunishmentType.WARNING ? (PunishmentManager.get().getCurrentWarns(getUuid()) + 1) + "" : "0");
+                "COUNT", getType().getBasic() == PunishmentType.WARNING ? (PunishmentManager.get().getCurrentWarns(getUuid()) + 1) + "" : "0",
+                "TARGET_SERVER", targetServerLine,
+                "SERVER_INFO", serverInfo);
     }
 
     public String getDuration(boolean fromStart) {
@@ -279,6 +290,10 @@ public class Punishment {
         return this.server;
     }
 
+    public String getTargetServer() {
+        return this.targetServer;
+    }
+
     public long getStart() {
         return this.start;
     }
@@ -296,6 +311,6 @@ public class Punishment {
     }
 
     public String toString() {
-        return "Punishment(name=" + this.getName() + ", uuid=" + this.getUuid() + ", operator=" + this.getOperator() + ", calculation=" + this.getCalculation() + ", server=" + this.getServer() + ", start=" + this.getStart() + ", end=" + this.getEnd() + ", type=" + this.getType() + ", reason=" + this.getReason() + ", id=" + this.getId() + ")";
+        return "Punishment(name=" + this.getName() + ", uuid=" + this.getUuid() + ", operator=" + this.getOperator() + ", calculation=" + this.getCalculation() + ", server=" + this.getServer() + ", targetServer=" + this.getTargetServer() + ", start=" + this.getStart() + ", end=" + this.getEnd() + ", type=" + this.getType() + ", reason=" + this.getReason() + ", id=" + this.getId() + ")";
     }
 }

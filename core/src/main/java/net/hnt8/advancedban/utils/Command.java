@@ -29,7 +29,7 @@ import static net.hnt8.advancedban.utils.CommandUtils.*;
 public enum Command {
     BAN(
             PunishmentType.BAN.getPerms(),
-            ".+",
+            ".+( [a-zA-Z0-9_-]+)?",
             new PunishmentTabCompleter(false),
             new PunishmentProcessor(PunishmentType.BAN),
             PunishmentType.BAN.getConfSection("Usage"),
@@ -37,7 +37,7 @@ public enum Command {
 
     TEMP_BAN(
             PunishmentType.TEMP_BAN.getPerms(),
-            "(-s )?\\S+ ?([1-9][0-9]*([wdhms]|mo)|#.+)( .*)?",
+            "(-s )?\\S+ ?([1-9][0-9]*([wdhms]|mo)|#.+)( .*)?( [a-zA-Z0-9_-]+)?",
             new PunishmentTabCompleter(true),
             new PunishmentProcessor(PunishmentType.TEMP_BAN),
             PunishmentType.TEMP_BAN.getConfSection("Usage"),
@@ -45,7 +45,7 @@ public enum Command {
 
     IP_BAN(
             PunishmentType.IP_BAN.getPerms(),
-            ".+",
+            ".+( [a-zA-Z0-9_-]+)?",
             new PunishmentTabCompleter(false),
             new PunishmentProcessor(PunishmentType.IP_BAN),
             PunishmentType.IP_BAN.getConfSection("Usage"),
@@ -53,7 +53,7 @@ public enum Command {
 
     TEMP_IP_BAN(
             PunishmentType.TEMP_IP_BAN.getPerms(),
-            "(-s )?\\S+ ?([1-9][0-9]*([wdhms]|mo)|#.+)( .*)?",
+            "(-s )?\\S+ ?([1-9][0-9]*([wdhms]|mo)|#.+)( .*)?( [a-zA-Z0-9_-]+)?",
             new PunishmentTabCompleter(true),
             new PunishmentProcessor(PunishmentType.TEMP_IP_BAN),
             PunishmentType.TEMP_IP_BAN.getConfSection("Usage"),
@@ -61,7 +61,7 @@ public enum Command {
 
     MUTE(
             PunishmentType.MUTE.getPerms(),
-            ".+",
+            ".+( [a-zA-Z0-9_-]+)?",
             new PunishmentTabCompleter(false),
             new PunishmentProcessor(PunishmentType.MUTE),
             PunishmentType.MUTE.getConfSection("Usage"),
@@ -69,7 +69,7 @@ public enum Command {
 
     TEMP_MUTE(
             PunishmentType.TEMP_MUTE.getPerms(),
-            "(-s )?\\S+ ?([1-9][0-9]*([wdhms]|mo)|#.+)( .*)?",
+            "(-s )?\\S+ ?([1-9][0-9]*([wdhms]|mo)|#.+)( .*)?( [a-zA-Z0-9_-]+)?",
             new PunishmentTabCompleter(true),
             new PunishmentProcessor(PunishmentType.TEMP_MUTE),
             PunishmentType.TEMP_MUTE.getConfSection("Usage"),
@@ -116,7 +116,7 @@ public enum Command {
             "kick"),
 
     UN_BAN("ab." + PunishmentType.BAN.getName() + ".undo",
-            "\\S+",
+            "\\S+( \\S+)?",
             new BannedPlayersTabCompleter(),
             new RevokeProcessor(PunishmentType.BAN),
             "Un" + PunishmentType.BAN.getConfSection("Usage"),
@@ -377,12 +377,28 @@ public enum Command {
             new BasicTabCompleter(CleanTabCompleter.PLAYER_PLACEHOLDER, "[Name]"),
             input -> {
                 String name = input.getPrimary();
+                boolean isIpAddress = name.matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$");
+                
+                String uuid;
+                String ip;
+                String displayName;
+                
+                if (isIpAddress) {
+                    // Input is an IP address - use it directly
+                    ip = name;
+                    uuid = name; // For IP bans, the UUID field stores the IP
+                    displayName = name;
+                    input.next();
+                } else {
+                    // Input is a player name - fetch UUID
+                    uuid = processName(input);
+                    if (uuid == null)
+                        return;
+                    
+                    ip = Universal.get().getIps().getOrDefault(name.toLowerCase(), "none cashed");
+                    displayName = name;
+                }
 
-                String uuid = processName(input);
-                if (uuid == null)
-                    return;
-
-                String ip = Universal.get().getIps().getOrDefault(name.toLowerCase(), "none cashed");
                 String loc = Universal.get().getMethods().getFromUrlJson("http://ip-api.com/json/" + ip, "country");
                 Punishment mute = PunishmentManager.get().getMute(uuid);
                 Punishment ban = PunishmentManager.get().getBan(uuid);
@@ -390,36 +406,46 @@ public enum Command {
                 String cached = MessageManager.getMessage("Check.Cached", false);
                 String notCached = MessageManager.getMessage("Check.NotCached", false);
 
-                boolean nameCached = PunishmentManager.get().isCached(name.toLowerCase());
+                boolean nameCached = isIpAddress ? false : PunishmentManager.get().isCached(name.toLowerCase());
                 boolean ipCached = PunishmentManager.get().isCached(ip);
-                boolean uuidCached = PunishmentManager.get().isCached(uuid);
+                boolean uuidCached = isIpAddress ? false : PunishmentManager.get().isCached(uuid);
 
                 Object sender = input.getSender();
-                MessageManager.sendMessage(sender, "Check.Header", true, "NAME", name, "CACHED", nameCached ? cached : notCached);
-                MessageManager.sendMessage(sender, "Check.UUID", false, "UUID", uuid, "CACHED", uuidCached ? cached : notCached);
+                MessageManager.sendMessage(sender, "Check.Header", true, "NAME", displayName, "CACHED", nameCached ? cached : notCached);
+                
+                // Only show UUID if it's not an IP address
+                if (!isIpAddress) {
+                    MessageManager.sendMessage(sender, "Check.UUID", false, "UUID", uuid, "CACHED", uuidCached ? cached : notCached);
+                }
+                
                 if (Universal.get().hasPerms(sender, "ab.check.ip")) {
                     MessageManager.sendMessage(sender, "Check.IP", false, "IP", ip, "CACHED", ipCached ? cached : notCached);
                 }
                 MessageManager.sendMessage(sender, "Check.Geo", false, "LOCATION", loc == null ? "failed!" : loc);
                 MessageManager.sendMessage(sender, "Check.Mute", false, "DURATION", mute == null ? "<green>none</green>" : mute.getType().isTemp() ? "<yellow>" + mute.getDuration(false) + "</yellow>" : "<red>perma</red>");
                 if (mute != null) {
+                    String muteIssuedOn = (mute.getServer() == null || mute.getServer().isEmpty()) ? "unknown" : mute.getServer();
+                    String muteScope = (mute.getTargetServer() == null || mute.getTargetServer().isEmpty()) ? "all" : mute.getTargetServer();
                     MessageManager.sendMessage(sender, "Check.MuteReason", false, "REASON", mute.getReason());
                     MessageManager.sendMessage(sender, "Check.MuteOperator", false, "OPERATOR", mute.getOperator());
-                    if (mute.getServer() != null && !mute.getServer().isEmpty()) {
-                        MessageManager.sendMessage(sender, "Check.MuteServer", false, "SERVER", mute.getServer());
-                    }
+                    MessageManager.sendMessage(sender, "Check.MuteServer", false, "SERVER", muteIssuedOn);
+                    MessageManager.sendMessage(sender, "Check.MuteScope", false, "SERVER", muteScope);
                 }
                 MessageManager.sendMessage(sender, "Check.Ban", false, "DURATION", ban == null ? "<green>none</green>" : ban.getType().isTemp() ? "<yellow>" + ban.getDuration(false) + "</yellow>" : "<red>perma</red>");
                 if (ban != null) {
+                    String banIssuedOn = (ban.getServer() == null || ban.getServer().isEmpty()) ? "unknown" : ban.getServer();
+                    String banScope = (ban.getTargetServer() == null || ban.getTargetServer().isEmpty()) ? "all" : ban.getTargetServer();
                     MessageManager.sendMessage(sender, "Check.BanReason", false, "REASON", ban.getReason());
                     MessageManager.sendMessage(sender, "Check.BanOperator", false, "OPERATOR", ban.getOperator());
-                    if (ban.getServer() != null && !ban.getServer().isEmpty()) {
-                        MessageManager.sendMessage(sender, "Check.BanServer", false, "SERVER", ban.getServer());
-                    }
+                    MessageManager.sendMessage(sender, "Check.BanServer", false, "SERVER", banIssuedOn);
+                    MessageManager.sendMessage(sender, "Check.BanScope", false, "SERVER", banScope);
                 }
-                MessageManager.sendMessage(sender, "Check.Warn", false, "COUNT", PunishmentManager.get().getCurrentWarns(uuid) + "");
-
-                MessageManager.sendMessage(sender, "Check.Note", false, "COUNT", PunishmentManager.get().getCurrentNotes(uuid) + "");
+                
+                // Only show warns/notes for player names, not IP addresses
+                if (!isIpAddress) {
+                    MessageManager.sendMessage(sender, "Check.Warn", false, "COUNT", PunishmentManager.get().getCurrentWarns(uuid) + "");
+                    MessageManager.sendMessage(sender, "Check.Note", false, "COUNT", PunishmentManager.get().getCurrentNotes(uuid) + "");
+                }
             },
             "Check.Usage",
             "check"),

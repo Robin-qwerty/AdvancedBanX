@@ -43,9 +43,37 @@ public class Universal {
     private LogManager logManager;
 
     private static boolean redis = false;
+    
+    // ThreadLocal to store server name for console/backend commands
+    private static final ThreadLocal<String> currentServerName = new ThreadLocal<>();
 
 
     private final Gson gson = new Gson();
+    
+    /**
+     * Set the server name for the current thread (used for console/backend commands).
+     * 
+     * @param serverName the server name
+     */
+    public static void setCurrentServerName(String serverName) {
+        currentServerName.set(serverName);
+    }
+    
+    /**
+     * Get the server name for the current thread (used for console/backend commands).
+     * 
+     * @return the server name, or null if not set
+     */
+    public static String getCurrentServerName() {
+        return currentServerName.get();
+    }
+    
+    /**
+     * Clear the server name for the current thread.
+     */
+    public static void clearCurrentServerName() {
+        currentServerName.remove();
+    }
 
     /**
      * Get universal.
@@ -308,6 +336,10 @@ public class Universal {
      * @return the string
      */
     public String callConnection(String name, String ip) {
+        return callConnection(name, ip, null);
+    }
+    
+    public String callConnection(String name, String ip, String targetServer) {
         name = name.toLowerCase();
         String uuid = UUIDManager.get().getUUID(name);
         if (uuid == null) return "[AdvancedBan] Failed to fetch your UUID";
@@ -327,14 +359,33 @@ public class Universal {
             }
         }
 
-        Punishment pt = interimData.getBan();
+        // Get ban, considering target server if specified
+        Punishment pt = targetServer != null 
+            ? PunishmentManager.get().getBan(uuid, targetServer)
+            : interimData.getBan();
 
         if (pt == null) {
             interimData.accept();
             return null;
         }
-
-        return pt.getLayoutBSN();
+        
+        // Check if this is a server-specific ban and if the player is trying to join that server
+        if (targetServer != null && pt.getTargetServer() != null) {
+            // Server-specific ban - only block if trying to join that specific server
+            if (pt.getTargetServer().equalsIgnoreCase(targetServer)) {
+                return pt.getLayoutBSN();
+            } else {
+                // Player is trying to join a different server, allow it
+                return null;
+            }
+        } else if (pt.getTargetServer() == null) {
+            // Network-wide ban - block on all servers (including initial login)
+            return pt.getLayoutBSN();
+        } else {
+            // Server-specific ban but no target server specified (initial login)
+            // Allow initial login, but they'll be blocked when trying to join the specific server
+            return null;
+        }
     }
 
     /**

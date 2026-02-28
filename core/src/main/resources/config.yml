@@ -63,14 +63,21 @@ MuteCommands:
 - 'ehelpop'
 - 'p msg'
 
+# Optional server names for scoped punishments on proxies (Velocity/Bungee).
+# Only if the LAST command argument matches one of these values exactly,
+# it will be treated as a target server. Otherwise it remains part of the reason.
+# Leave empty to disable server-scoped suffix parsing.
+ScopedPunishmentServers:
+- 'lobby'
+- 'lobby1'
+- 'survival'
+
 # These players will not be able to get punished in any way
 # this also works if the player is offline
 # Use Vault to make exempt permissions also work for offline players
 ExemptPlayers:
-- 'Leoko'
-- 'md5'
-- 'dutchy1001'
-- 'ItzSomebody'
+- 'Robinaves'
+- 'Loxymus'
 
 # The date-format which will be used for the %DATE% variable
 DateFormat: "MM/dd/yyyy HH:mm"

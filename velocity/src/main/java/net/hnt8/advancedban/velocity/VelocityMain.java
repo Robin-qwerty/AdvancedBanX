@@ -11,6 +11,7 @@ import net.hnt8.advancedban.Universal;
 import net.hnt8.advancedban.velocity.listener.BackendCommandListener;
 import net.hnt8.advancedban.velocity.listener.ChatListenerVelocity;
 import net.hnt8.advancedban.velocity.listener.ConnectionListenerVelocity;
+import net.hnt8.advancedban.velocity.listener.ServerConnectListener;
 
 import java.nio.file.Path;
 import java.util.logging.Logger;
@@ -61,6 +62,7 @@ public class VelocityMain {
         server.getEventManager().register(this, new ConnectionListenerVelocity());
         server.getEventManager().register(this, new ChatListenerVelocity());
         server.getEventManager().register(this, new BackendCommandListener(server));
+        server.getEventManager().register(this, new ServerConnectListener());
 
         logger.info("Avesban has been enabled!");
     }

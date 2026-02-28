@@ -53,15 +53,19 @@ public class PunishmentProcessor implements Consumer<Command.CommandInput> {
         }
 
 
-        // build reason
+        // Optional scoped server parameter (Velocity/Bungee only)
+        // The last argument is treated as server only if it is explicitly listed in config.yml.
+        String targetServer = extractTargetServer(input);
+
+        // build reason (after potentially removing server name)
         String reason = CommandUtils.processReason(input);
         if (reason == null)
             return;
         else if (reason.isEmpty())
             reason = null;
 
-        // check if punishment of this type is already active
-        if (alreadyPunished(target, type)) {
+        // check if punishment of this type is already active (checking both network-wide and server-specific)
+        if (alreadyPunished(target, type, targetServer)) {
             MessageManager.sendMessage(input.getSender(), type.getBasic().getName() + ".AlreadyDone",
                     true, "NAME", name);
             return;
@@ -70,7 +74,7 @@ public class PunishmentProcessor implements Consumer<Command.CommandInput> {
         MethodInterface mi = Universal.get().getMethods();
         String operator = mi.getName(input.getSender());
         String server = mi.getServerName(input.getSender());
-        Punishment.create(name, target, reason, operator, type, end, timeTemplate, server, silent);
+        Punishment.create(name, target, reason, operator, type, end, timeTemplate, server, targetServer, silent);
 
         MessageManager.sendMessage(input.getSender(), type.getBasic().getName() + ".Done",
                 true, "NAME", name);
@@ -168,9 +172,63 @@ public class PunishmentProcessor implements Consumer<Command.CommandInput> {
         return false;
     }
 
-    private static boolean alreadyPunished(String target, PunishmentType type) {
-        return (type.getBasic() == PunishmentType.MUTE && PunishmentManager.get().isMuted(target))
-                || (type.getBasic() == PunishmentType.BAN && PunishmentManager.get().isBanned(target));
+    private static boolean alreadyPunished(String target, PunishmentType type, String targetServer) {
+        if (type.getBasic() == PunishmentType.MUTE) {
+            for (Punishment mute : PunishmentManager.get().getPunishments(target, PunishmentType.MUTE, true)) {
+                if (targetServer == null) {
+                    // Network-wide mute already exists
+                    if (mute.getTargetServer() == null) {
+                        return true;
+                    }
+                } else {
+                    // Target server already muted or network-wide mute exists
+                    if (mute.getTargetServer() == null || targetServer.equalsIgnoreCase(mute.getTargetServer())) {
+                        return true;
+                    }
+                }
+            }
+        } else if (type.getBasic() == PunishmentType.BAN) {
+            for (Punishment ban : PunishmentManager.get().getPunishments(target, PunishmentType.BAN, true)) {
+                if (targetServer == null) {
+                    // Network-wide ban already exists
+                    if (ban.getTargetServer() == null) {
+                        return true;
+                    }
+                } else {
+                    // Target server already banned or network-wide ban exists
+                    if (ban.getTargetServer() == null || targetServer.equalsIgnoreCase(ban.getTargetServer())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static String extractTargetServer(Command.CommandInput input) {
+        if (!Universal.get().isBungee() || !input.hasNext()) {
+            return null;
+        }
+
+        MethodInterface mi = Universal.get().getMethods();
+        List<String> knownServers = mi.getStringList(mi.getConfig(), "ScopedPunishmentServers");
+        if (knownServers == null || knownServers.isEmpty()) {
+            return null;
+        }
+
+        String[] remainingArgs = input.getArgs();
+        if (remainingArgs.length == 0) {
+            return null;
+        }
+
+        String lastArg = remainingArgs[remainingArgs.length - 1];
+        for (String server : knownServers) {
+            if (server != null && server.equalsIgnoreCase(lastArg)) {
+                input.removeArgument(remainingArgs.length - 1);
+                return server;
+            }
+        }
+        return null;
     }
 
     private static class TimeCalculation {

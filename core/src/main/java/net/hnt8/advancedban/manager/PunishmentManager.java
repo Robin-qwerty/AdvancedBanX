@@ -263,8 +263,48 @@ public class PunishmentManager {
      * @return the ban or <code>null</code> if not banned
      */
     public Punishment getBan(String uuid) {
+        return getBan(uuid, null);
+    }
+    
+    /**
+     * Get a players active ban, optionally filtered by target server.
+     *
+     * @param uuid the players uuid (can also be an IP)
+     * @param targetServer the server name to check for, or null for network-wide bans
+     * @return the ban or <code>null</code> if not banned
+     */
+    public Punishment getBan(String uuid, String targetServer) {
         List<Punishment> punishments = getPunishments(uuid, PunishmentType.BAN, true);
-        return punishments.isEmpty() ? null : punishments.get(0);
+        if (punishments.isEmpty()) {
+            return null;
+        }
+        
+        // If targetServer is specified, prioritize server-specific bans for that server
+        // Otherwise, return network-wide ban (targetServer is null)
+        if (targetServer != null) {
+            // First check for server-specific ban
+            for (Punishment punishment : punishments) {
+                if (targetServer.equalsIgnoreCase(punishment.getTargetServer())) {
+                    return punishment;
+                }
+            }
+            // If no server-specific ban, check for network-wide ban
+            for (Punishment punishment : punishments) {
+                if (punishment.getTargetServer() == null) {
+                    return punishment;
+                }
+            }
+        } else {
+            // Looking for network-wide ban - return first ban with null targetServer
+            for (Punishment punishment : punishments) {
+                if (punishment.getTargetServer() == null) {
+                    return punishment;
+                }
+            }
+        }
+        
+        // Return first ban if no specific match found
+        return punishments.get(0);
     }
 
     /**
@@ -274,8 +314,42 @@ public class PunishmentManager {
      * @return the mute or <code>null</code> if not muted
      */
     public Punishment getMute(String uuid) {
+        return getMute(uuid, null);
+    }
+
+    /**
+     * Get a players active mute, optionally filtered by target server.
+     *
+     * @param uuid the players uuid
+     * @param targetServer the server name to check for, or null for network-wide mutes
+     * @return the mute or <code>null</code> if not muted
+     */
+    public Punishment getMute(String uuid, String targetServer) {
         List<Punishment> punishments = getPunishments(uuid, PunishmentType.MUTE, true);
-        return punishments.isEmpty() ? null : punishments.get(0);
+        if (punishments.isEmpty()) {
+            return null;
+        }
+
+        if (targetServer != null) {
+            for (Punishment punishment : punishments) {
+                if (targetServer.equalsIgnoreCase(punishment.getTargetServer())) {
+                    return punishment;
+                }
+            }
+            for (Punishment punishment : punishments) {
+                if (punishment.getTargetServer() == null) {
+                    return punishment;
+                }
+            }
+            return null;
+        }
+
+        for (Punishment punishment : punishments) {
+            if (punishment.getTargetServer() == null) {
+                return punishment;
+            }
+        }
+        return punishments.get(0);
     }
 
     /**
@@ -403,6 +477,13 @@ public class PunishmentManager {
         } catch (SQLException ex) {
             // Column doesn't exist yet, will be null
         }
+        // Handle targetServer column - may not exist in older databases
+        String targetServer = null;
+        try {
+            targetServer = rs.getString("targetServer");
+        } catch (SQLException ex) {
+            // Column doesn't exist yet, will be null
+        }
         return new Punishment(
                 rs.getString("name"),
                 rs.getString("uuid"), rs.getString("reason"),
@@ -412,6 +493,7 @@ public class PunishmentManager {
                 rs.getLong("end"),
                 rs.getString("calculation"),
                 server,
+                targetServer,
                 rs.getInt("id"));
     }
 

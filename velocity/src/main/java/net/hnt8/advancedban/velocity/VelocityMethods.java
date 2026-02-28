@@ -308,7 +308,14 @@ public class VelocityMethods implements MethodInterface {
         if (!(player instanceof Player)) {
             return false;
         }
-        Punishment mute = PunishmentManager.get().getMute(UUIDManager.get().getUUID(getName(player)));
+        Player velocityPlayer = (Player) player;
+        String serverName = velocityPlayer.getCurrentServer()
+                .map(serverConnection -> serverConnection.getServerInfo().getName())
+                .orElse(null);
+        Punishment mute = PunishmentManager.get().getMute(
+                UUIDManager.get().getUUID(getName(player)),
+                serverName
+        );
         if (mute == null) {
             return false;
         }
@@ -326,7 +333,14 @@ public class VelocityMethods implements MethodInterface {
         if (!Universal.get().isMuteCommand(cmd.substring(1))) {
             return false;
         }
-        Punishment mute = PunishmentManager.get().getMute(UUIDManager.get().getUUID(getName(player)));
+        Player velocityPlayer = (Player) player;
+        String serverName = velocityPlayer.getCurrentServer()
+                .map(serverConnection -> serverConnection.getServerInfo().getName())
+                .orElse(null);
+        Punishment mute = PunishmentManager.get().getMute(
+                UUIDManager.get().getUUID(getName(player)),
+                serverName
+        );
         if (mute == null) {
             return false;
         }
@@ -477,8 +491,14 @@ public class VelocityMethods implements MethodInterface {
                     .map(serverConnection -> serverConnection.getServerInfo().getName())
                     .orElse(null);
         }
-        // For console commands, return null or proxy server name
-        return null;
+        // For console commands, check ThreadLocal for server name (set by backend link)
+        String serverName = net.hnt8.advancedban.Universal.getCurrentServerName();
+        if (serverName != null) {
+            return serverName;
+        }
+        // Fallback: return proxy server name or null
+        return getServer().getConfiguration().getServers().keySet().iterator().hasNext() 
+            ? "proxy" : null;
     }
 
     private ProxyServer getServer() {

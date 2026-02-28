@@ -1,6 +1,7 @@
 package net.hnt8.advancedban.backendlink;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -14,12 +15,13 @@ import java.util.List;
 public class BackendLinkMain extends JavaPlugin {
     
     private static BackendLinkMain instance;
-    private static final String CHANNEL = "advancedban:command";
+    public static final String CHANNEL = "advancedban:command";
     private static final List<String> COMMANDS = Arrays.asList(
         "ban", "tempban", "banip", "tempipban",
         "mute", "tempmute", "warn", "tempwarn", "kick",
         "unban", "unmute"
     );
+    private BackendPunishmentListener punishmentListener;
 
     @Override
     public void onEnable() {
@@ -34,8 +36,11 @@ public class BackendLinkMain extends JavaPlugin {
             return;
         }
         
-        // Register plugin messaging channel
+        // Register plugin messaging channels
         getServer().getMessenger().registerOutgoingPluginChannel(this, CHANNEL);
+        punishmentListener = new BackendPunishmentListener(this);
+        getServer().getMessenger().registerIncomingPluginChannel(this, CHANNEL, punishmentListener);
+        getServer().getPluginManager().registerEvents(punishmentListener, this);
         
         // Register all commands
         for (String cmd : COMMANDS) {
@@ -48,11 +53,19 @@ public class BackendLinkMain extends JavaPlugin {
         }
         
         getLogger().info("Avesban BackendLink enabled! Commands will be forwarded to Velocity proxy.");
+
+        // Keep mute state fairly fresh for online players.
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                requestPunishmentStatus(player);
+            }
+        }, 40L, 100L);
     }
 
     @Override
     public void onDisable() {
         getServer().getMessenger().unregisterOutgoingPluginChannel(this, CHANNEL);
+        getServer().getMessenger().unregisterIncomingPluginChannel(this, CHANNEL);
         getLogger().info("Avesban BackendLink disabled!");
     }
 
@@ -90,16 +103,73 @@ public class BackendLinkMain extends JavaPlugin {
         DataOutputStream out = new DataOutputStream(byteOut);
         
         try {
+            // Get the server name - try to get from player's current server connection
+            // If player is connected through Velocity, we can get the server name from their connection
+            String serverName = null;
+            if (relayPlayer instanceof org.bukkit.entity.Player) {
+                // Try to get server name from BungeeCord/Velocity plugin messaging
+                // For now, use a fallback approach
+                serverName = relayPlayer.getServer() != null ? relayPlayer.getServer().getName() : null;
+            }
+            
+            // Fallback: try system properties or environment variables
+            if (serverName == null || serverName.isEmpty()) {
+                serverName = System.getProperty("server.name");
+            }
+            if (serverName == null || serverName.isEmpty()) {
+                serverName = System.getenv("SERVER_NAME");
+            }
+            if (serverName == null || serverName.isEmpty()) {
+                // Final fallback: use server address or default
+                String address = Bukkit.getServer().getIp();
+                int port = Bukkit.getServer().getPort();
+                serverName = (address != null && !address.isEmpty()) ? address + ":" + port : "backend-server";
+            }
+            
             out.writeUTF("EXECUTE_COMMAND");
             out.writeUTF(fullCommand.toString());
+            out.writeUTF(serverName); // Include server name in the message
             
             relayPlayer.sendPluginMessage(this, CHANNEL, byteOut.toByteArray());
             
-            getLogger().fine("Sent command to proxy: " + fullCommand.toString());
+            getLogger().fine("Sent command to proxy: " + fullCommand.toString() + " from server: " + serverName);
         } catch (IOException e) {
             getLogger().severe("Failed to send command to proxy: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    public void requestPunishmentStatus(Player player) {
+        if (player == null || !player.isOnline()) {
+            return;
+        }
+        try {
+            ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+            DataOutputStream out = new DataOutputStream(byteOut);
+            out.writeUTF("CHECK_PUNISHMENT");
+            out.writeUTF(player.getName());
+            out.writeUTF(player.getUniqueId().toString().replace("-", ""));
+            out.writeUTF(resolveServerName());
+            player.sendPluginMessage(this, CHANNEL, byteOut.toByteArray());
+        } catch (IOException ex) {
+            getLogger().warning("Failed to request punishment status for " + player.getName() + ": " + ex.getMessage());
+        }
+    }
+
+    private String resolveServerName() {
+        String serverName = Bukkit.getServer().getName();
+        if (serverName == null || serverName.isEmpty()) {
+            serverName = System.getProperty("server.name");
+        }
+        if (serverName == null || serverName.isEmpty()) {
+            serverName = System.getenv("SERVER_NAME");
+        }
+        if (serverName == null || serverName.isEmpty()) {
+            String address = Bukkit.getServer().getIp();
+            int port = Bukkit.getServer().getPort();
+            serverName = (address != null && !address.isEmpty()) ? address + ":" + port : "backend-server";
+        }
+        return serverName;
     }
 }
 

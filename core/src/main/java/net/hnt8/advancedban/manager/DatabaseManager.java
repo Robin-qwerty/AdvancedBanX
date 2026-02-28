@@ -114,6 +114,8 @@ public class DatabaseManager {
             fixLongColumnsToBigInt();
             // Add server column to existing tables if it doesn't exist
             addServerColumnIfMissing();
+            // Add targetServer column to existing tables if it doesn't exist
+            addTargetServerColumnIfMissing();
             // Create indexes after ensuring column types are correct
             createMySqlIndexes();
         }
@@ -349,6 +351,37 @@ public class DatabaseManager {
             }
         } catch (SQLException ex) {
             Universal.get().getLogger().warning("Failed to add server column: " + ex.getMessage());
+            Universal.get().debugSqlException(ex);
+        }
+    }
+
+    /**
+     * Adds the targetServer column to existing MySQL tables if it doesn't exist.
+     * This allows existing databases to be upgraded without data loss.
+     */
+    private void addTargetServerColumnIfMissing() {
+        try (Connection connection = dataSource.getConnection()) {
+            // Check if targetServer column exists in Punishments table
+            if (!columnExists(connection, "Punishments", "targetServer")) {
+                Universal.get().getLogger().info("Adding 'targetServer' column to Punishments table...");
+                try (PreparedStatement stmt = connection.prepareStatement(
+                        "ALTER TABLE `Punishments` ADD COLUMN `targetServer` VARCHAR(64) NULL DEFAULT NULL")) {
+                    stmt.execute();
+                    Universal.get().getLogger().info("Successfully added 'targetServer' column to Punishments table.");
+                }
+            }
+            
+            // Check if targetServer column exists in PunishmentHistory table
+            if (!columnExists(connection, "PunishmentHistory", "targetServer")) {
+                Universal.get().getLogger().info("Adding 'targetServer' column to PunishmentHistory table...");
+                try (PreparedStatement stmt = connection.prepareStatement(
+                        "ALTER TABLE `PunishmentHistory` ADD COLUMN `targetServer` VARCHAR(64) NULL DEFAULT NULL")) {
+                    stmt.execute();
+                    Universal.get().getLogger().info("Successfully added 'targetServer' column to PunishmentHistory table.");
+                }
+            }
+        } catch (SQLException ex) {
+            Universal.get().getLogger().warning("Failed to add targetServer column: " + ex.getMessage());
             Universal.get().debugSqlException(ex);
         }
     }

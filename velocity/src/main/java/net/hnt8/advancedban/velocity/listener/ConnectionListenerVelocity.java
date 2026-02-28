@@ -1,6 +1,7 @@
 package net.hnt8.advancedban.velocity.listener;
 
 import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.EventTask;
 import com.velocitypowered.api.event.connection.LoginEvent;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.proxy.Player;
@@ -16,11 +17,11 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 public class ConnectionListenerVelocity {
 
     @Subscribe
-    public void onConnection(LoginEvent event) {
+    public EventTask onConnection(LoginEvent event) {
         Player player = event.getPlayer();
         UUIDManager.get().supplyInternUUID(player.getUsername(), player.getUniqueId());
-        
-        Universal.get().getMethods().runAsync(() -> {
+
+        return EventTask.async(() -> {
             String result = Universal.get().callConnection(player.getUsername(), 
                 player.getRemoteAddress().getAddress().getHostAddress());
 

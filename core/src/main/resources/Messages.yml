@@ -15,15 +15,16 @@ General:
 
 
 Ban:
-  Usage: "<red>Usage</red> <dark_gray>»</dark_gray> <gray><italic>/ban (-s) [Name] [Reason/@Layout]</italic></gray>"
+  Usage: "<red>Usage</red> <dark_gray>»</dark_gray> <gray><italic>/ban (-s) [Name] [Reason/@Layout] [Server]</italic></gray>"
   Done: "<italic><red>%NAME%</red></italic> <gray>was successfully banned!</gray>"
   AlreadyDone: "<italic><red>%NAME%</red></italic> <gray>has already been banned!</gray>"
   Exempt: "<gray>You are not able to ban <red><italic>%NAME%</italic></red></gray>"
   Layout:
-    - '%PREFIX% <gray>Permanently banned</gray>'
+    - '%PREFIX% <gray>Permanently banned%SERVER_INFO%</gray>'
     - ''
     - ''
     - "<red>Reason <dark_gray>»</dark_gray></red> <gray>%REASON%</gray>"
+    - '%TARGET_SERVER%'
     - ''
     - '<dark_gray>Unban application in TS or forum</dark_gray>'
     - "<yellow>TS-Ip <dark_gray>»</dark_gray></yellow> <red><underlined>coming soon</underlined></red>"
@@ -34,12 +35,13 @@ Ban:
   UndoNotification: "<yellow><italic>%OPERATOR%</italic></yellow> <gray>unbanned</gray> <red><italic>%NAME%</italic></red>"
 
 Ipban:
-  Usage: "<red>Usage</red> <dark_gray>»</dark_gray> <gray><italic>/banip (-s) [Name/IP] [Reason/@Layout]</italic></gray>"
+  Usage: "<red>Usage</red> <dark_gray>»</dark_gray> <gray><italic>/banip (-s) [Name/IP] [Reason/@Layout] [Server]</italic></gray>"
   Layout:
-    - '%PREFIX% <gray>Permanently banned</gray>'
+    - '%PREFIX% <gray>Permanently banned%SERVER_INFO%</gray>'
     - ''
     - ''
     - "<red>Reason <dark_gray>»</dark_gray></red> <gray>%REASON%</gray>"
+    - '%TARGET_SERVER%'
     - ''
     - '<dark_gray>Unban application in TS or forum</dark_gray>'
     - "<yellow>TS-Ip <dark_gray>»</dark_gray></yellow> <red><underlined>coming soon</underlined></red>"
@@ -50,14 +52,15 @@ Ipban:
   IpNotCashed: "<red>There is no saved IP for <italic>%NAME%!</italic></red>"
 
 Tempban:
-  Usage: "<red>Usage</red> <dark_gray>»</dark_gray> <gray><italic>/tempban (-s) [Name] [Xmo/Xd/Xh/Xm/Xs/#TimeLayout] [Reason/@Layout]</italic></gray>"
+  Usage: "<red>Usage</red> <dark_gray>»</dark_gray> <gray><italic>/tempban (-s) [Name] [Xmo/Xd/Xh/Xm/Xs/#TimeLayout] [Reason/@Layout] [Server]</italic></gray>"
   MaxDuration: "<red>You are not able to ban more than %MAX%sec</red>"
   Layout:
-    - '%PREFIX% <gray>Temporarily banned</gray>'
+    - '%PREFIX% <gray>Temporarily banned%SERVER_INFO%</gray>'
     - ''
     - ''
     - "<red>Reason <dark_gray>»</dark_gray></red> <gray>%REASON%</gray>"
     - "<red>Duration <dark_gray>»</dark_gray></red> <gray>%DURATION%</gray>"
+    - '%TARGET_SERVER%'
     - ''
     - '<dark_gray>Unban application in TS or forum</dark_gray>'
     - "<yellow>TS-Ip <dark_gray>»</dark_gray></yellow> <red><underlined>coming soon</underlined></red>"
@@ -68,14 +71,15 @@ Tempban:
     - "<gray><italic>This player got banned for <yellow>%DURATION%</yellow></italic></gray>"
 
 Tempipban:
-  Usage: "<red>Usage</red> <dark_gray>»</dark_gray> <gray><italic>/tempipban (-s) [Name/IP] [Xmo/Xd/Xh/Xm/Xs/#TimeLayout] [Reason/@Layout]</italic></gray>"
+  Usage: "<red>Usage</red> <dark_gray>»</dark_gray> <gray><italic>/tempipban (-s) [Name/IP] [Xmo/Xd/Xh/Xm/Xs/#TimeLayout] [Reason/@Layout] [Server]</italic></gray>"
   MaxDuration: "<red>You are not able to ban more than %MAX%sec</red>"
   Layout:
-    - '%PREFIX% <gray>Temporarily banned</gray>'
+    - '%PREFIX% <gray>Temporarily banned%SERVER_INFO%</gray>'
     - ''
     - ''
     - "<red>Reason <dark_gray>»</dark_gray></red> <gray>%REASON%</gray>"
     - "<red>Duration <dark_gray>»</dark_gray></red> <gray>%DURATION%</gray>"
+    - '%TARGET_SERVER%'
     - ''
     - '<dark_gray>Unban application in TS or forum</dark_gray>'
     - "<yellow>TS-Ip <dark_gray>»</dark_gray></yellow> <red><underlined>coming soon</underlined></red>"
@@ -86,24 +90,26 @@ Tempipban:
     - "<gray><italic>This player got banned for <yellow>%DURATION%</yellow></italic></gray>"
 
 Mute:
-  Usage: "<red>Usage</red> <dark_gray>»</dark_gray> <gray><italic>/mute (-s) [Name] [Reason/@Layout]</italic></gray>"
+  Usage: "<red>Usage</red> <dark_gray>»</dark_gray> <gray><italic>/mute (-s) [Name] [Reason/@Layout] [Server]</italic></gray>"
   Done: "<red><italic>%NAME%</italic></red> <gray>was successfully muted!</gray>"
   AlreadyDone: "<red><italic>%NAME%</italic></red> <gray>has already been muted!</gray>"
   Exempt: "<gray>You are not able to mute <red><italic>%NAME%</italic></red>"
   Layout:
-    - '%PREFIX% <gray>You are permanently muted</gray>'
+    - '%PREFIX% <gray>You are permanently muted%SERVER_INFO%</gray>'
     - "<red>Reason <dark_gray>»</dark_gray></red> <gray>%REASON%</gray>"
+    - '%TARGET_SERVER%'
   Notification:
     - "<red><italic>%NAME%</italic></red> <gray>got muted by</gray> <yellow><italic>%OPERATOR%</italic></yellow>"
     - "<gray>For the reason <italic>%REASON%</italic></gray>"
   UndoNotification: "<yellow><italic>%OPERATOR%</italic></yellow> <gray>unmuted</gray> <red><bold>%NAME%</bold></red>"
 
 Tempmute:
-  Usage: "<red>Usage</red> <dark_gray>»</dark_gray> <gray><italic>/tempmute (-s) [Name] [Xmo/Xd/Xh/Xm/Xs/#TimeLayout] [Reason/@Layout]</italic></gray>"
+  Usage: "<red>Usage</red> <dark_gray>»</dark_gray> <gray><italic>/tempmute (-s) [Name] [Xmo/Xd/Xh/Xm/Xs/#TimeLayout] [Reason/@Layout] [Server]</italic></gray>"
   MaxDuration: "<red>You are not able to mute more than %MAX%sec</red>"
   Layout:
-    - '%PREFIX% <gray>You are muted for %DURATION%</gray>'
+    - '%PREFIX% <gray>You are muted for %DURATION%%SERVER_INFO%</gray>'
     - "<red>Reason <dark_gray>»</dark_gray></red> <gray>%REASON%</gray>"
+    - '%TARGET_SERVER%'
   Notification:
     - "<red><italic>%NAME%</italic></red> <gray>got muted by</gray> <yellow><italic>%OPERATOR%</italic></yellow>"
     - "<gray>For the reason <italic>%REASON%</italic></gray>"
@@ -158,7 +164,7 @@ Kick:
 
 
 UnBan:
-  Usage: "<red>Usage</red> <dark_gray>»</dark_gray> <gray><italic>/unban [Name/IP]</italic></gray>"
+  Usage: "<red>Usage</red> <dark_gray>»</dark_gray> <gray><italic>/unban [Name/IP] [Server/all]</italic></gray>"
   NotPunished: "<red><italic>%NAME%</italic> is not banned!</red>"
   Done: "<green><italic>%NAME%</italic></green> <gray>was successfully unbanned!</gray>"
   Notification: "<yellow><italic>%OPERATOR%</italic></yellow> <gray>unbanned</gray> <red><italic>%NAME%</italic></red>"
@@ -303,11 +309,13 @@ Check:
   Mute: "<red>Muted</red> <dark_gray>»</dark_gray> <gray>%DURATION%</gray>"
   MuteReason: "  <red>Reason</red> <dark_gray>»</dark_gray> <gray>%REASON%</gray>"
   MuteOperator: "  <red>Muted by</red> <dark_gray>»</dark_gray> <gray>%OPERATOR%</gray>"
-  MuteServer: "  <red>Server</red> <dark_gray>»</dark_gray> <gray>%SERVER%</gray>"
+  MuteServer: "  <red>Issued on</red> <dark_gray>»</dark_gray> <gray>%SERVER%</gray>"
+  MuteScope: "  <red>Applies to</red> <dark_gray>»</dark_gray> <gray>%SERVER%</gray>"
   Ban: "<red>Banned</red> <dark_gray>»</dark_gray> <gray>%DURATION%</gray>"
   BanReason: "  <red>Reason</red> <dark_gray>»</dark_gray> <gray>%REASON%</gray>"
   BanOperator: "  <red>Banned by</red> <dark_gray>»</dark_gray> <gray>%OPERATOR%</gray>"
-  BanServer: "  <red>Server</red> <dark_gray>»</dark_gray> <gray>%SERVER%</gray>"
+  BanServer: "  <red>Issued on</red> <dark_gray>»</dark_gray> <gray>%SERVER%</gray>"
+  BanScope: "  <red>Applies to</red> <dark_gray>»</dark_gray> <gray>%SERVER%</gray>"
   Warn: "<red>Warns</red> <dark_gray>»</dark_gray> <gray>%COUNT%</gray>"
   Note: "<red>Notes</red> <dark_gray>»</dark_gray> <gray>%COUNT%</gray>"
   NotFound: "<red>Sorry we have not been able to find %NAME%"
